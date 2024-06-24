@@ -58,7 +58,6 @@ export const Scroller = styled.div`
   width: 100%;
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: center;
   overflow: scroll;

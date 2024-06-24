@@ -1,5 +1,7 @@
 "use client";
-import React, { MutableRefObject, useEffect, useRef } from "react";
+import React, { MutableRefObject, useEffect, useRef, useState } from "react";
+// api
+import { getNFTsByCollection } from "@/api";
 // components
 import Searchbar from "@/app/components/Searchbar";
 // store
@@ -21,22 +23,61 @@ import { expressInThousands } from "@/utils/transform";
 
 const HomeScreen = () => {
   const mainHomeRef = useRef() as MutableRefObject<HTMLDivElement>;
+  const scrollerRef = useRef() as MutableRefObject<HTMLDivElement>;
 
-  const { nftCollectionDetailState, nftDetailState, selectedNFT } =
-    useNFTDetailStore(
-      ({ nftCollectionDetailState, nftDetailState, selectedNFT }) => ({
-        nftCollectionDetailState,
-        nftDetailState,
-        selectedNFT,
-      })
-    );
+  const [loading, setLoading] = useState(false);
 
-  const { inCenterPosition, previousSearch } = useSearchStore(
-    ({ inCenterPosition, previousSearch }) => ({
-      inCenterPosition,
-      previousSearch,
+  const {
+    nftCollectionDetailState,
+    nftDetailState,
+    updateNFTDetailState,
+    selectedNFT,
+  } = useNFTDetailStore(
+    ({
+      nftCollectionDetailState,
+      nftDetailState,
+      updateNFTDetailState,
+      selectedNFT,
+    }) => ({
+      nftCollectionDetailState,
+      nftDetailState,
+      updateNFTDetailState,
+      selectedNFT,
     })
   );
+
+  const { inCenterPosition } = useSearchStore(({ inCenterPosition }) => ({
+    inCenterPosition,
+  }));
+
+  const onScrollEventHandler = async (e: Event) => {
+    if (loading) return;
+
+    const target = scrollerRef.current;
+
+    const { clientHeight, scrollHeight, scrollTop } = target;
+
+    console.log({ clientHeight, scrollHeight, scrollTop });
+
+    if (scrollTop + clientHeight > scrollHeight - 50) {
+      setLoading(true);
+      const nftDetails = nftDetailState[selectedNFT];
+
+      const { address } = nftCollectionDetailState[selectedNFT];
+      const page = Math.floor(nftDetails.length / 40) + 1;
+      const { data, error, success } = await getNFTsByCollection(address, page);
+
+      if (!success) {
+        console.log(error);
+        setLoading(false);
+        return;
+      }
+
+      updateNFTDetailState({ [selectedNFT]: [...nftDetails, ...data.tokens] });
+
+      setLoading(false);
+    }
+  };
 
   const renderMainScreenOne = () => {
     if (selectedNFT) {
@@ -56,7 +97,7 @@ const HomeScreen = () => {
             <SubTitle>
               Showing {expressInThousands(nftDetails.length)} tokens{" "}
             </SubTitle>
-            <Scroller>
+            <Scroller ref={scrollerRef}>
               <FlexContainer
                 $flexDirection="row"
                 $justifyContent="center"
@@ -69,6 +110,17 @@ const HomeScreen = () => {
                     </TokenId>
                   </NFTCard>
                 ))}
+                {loading ? (
+                  <FlexContainer
+                    $height="80px"
+                    $alignItems="center"
+                    $justifyContent="center"
+                  >
+                    <p>loading...</p>
+                  </FlexContainer>
+                ) : (
+                  <></>
+                )}
               </FlexContainer>
             </Scroller>
           </FlexContainer>
@@ -80,13 +132,24 @@ const HomeScreen = () => {
   };
 
   useEffect(() => {
+    if (scrollerRef.current) {
+      scrollerRef.current.addEventListener("scrollend", onScrollEventHandler);
+    }
+
+    return () => {
+      scrollerRef.current?.removeEventListener(
+        "scrollend",
+        onScrollEventHandler
+      );
+    };
+  }, [selectedNFT]);
+
+  useEffect(() => {
     const target = mainHomeRef.current;
-    console.log(target);
 
     if (!target) return;
 
     if (inCenterPosition) {
-      console.log("i got called");
       target.scrollTo({
         behavior: "smooth",
         top: 0,
@@ -100,6 +163,15 @@ const HomeScreen = () => {
       });
     }
   }, [inCenterPosition]);
+
+  useEffect(() => {
+    if (loading) {
+      scrollerRef.current.scrollTo({
+        behavior: "smooth",
+        top: scrollerRef.current.scrollHeight,
+      });
+    }
+  }, [loading]);
 
   return (
     <MainHome ref={mainHomeRef}>

@@ -21,9 +21,8 @@ const Footer = () => {
   return (
     <MainFooter>
       {socials.map(({ icon, link }, key) => (
-        <FloatingCard>
+        <FloatingCard key={key}>
           <SocialIcons
-            key={key}
             $bgImg={icon.src}
             href={link}
             target="_blank"

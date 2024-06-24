@@ -7,7 +7,7 @@ export default createGlobalStyle`
         box-sizing: border-box;
         font-family: Source Sans Pro;
         transition: 350ms linear;
-        color: ${({ theme: { white } }) => white};
+        color: ${({ theme: { textColor } }) => textColor};
 
         // variables
         --three-px: 3px;
