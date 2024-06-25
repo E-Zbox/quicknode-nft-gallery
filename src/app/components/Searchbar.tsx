@@ -1,10 +1,20 @@
 "use client";
-import { ChangeEvent, useEffect, useState } from "react";
+import {
+  ChangeEvent,
+  MutableRefObject,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 // api
 import { getNFTCollectionDetail, getNFTsByCollection } from "@/api";
 // store
-import { useNFTDetailStore, useSearchStore } from "@/store";
+import { useErrorStore, useNFTDetailStore, useSearchStore } from "@/store";
 // styles
+import {
+  FlexContainer,
+  PositionContainer,
+} from "../styles/shared/Container.styles";
 import {
   MainSearch,
   MainSearchbar,
@@ -19,10 +29,6 @@ import {
 } from "../styles/Searchbar.styles";
 // utils
 import { screens } from "@/utils/data";
-import {
-  FlexContainer,
-  PositionContainer,
-} from "../styles/shared/Container.styles";
 import { expressInThousands } from "@/utils/transform";
 
 const LOCAL_STORAGE_NFT_DETAIL_STATE = "nftDetailState";
@@ -30,6 +36,11 @@ const LOCAL_STORAGE_NFT_DETAIL_STATE = "nftDetailState";
 const LOCAL_STORAGE_NFT_COLLECTION_DETAIL_STATE = "nftCollectionDetailState";
 
 const Searchbar = () => {
+  const intervalIdRef = useRef() as MutableRefObject<NodeJS.Timeout>;
+  const { setErrorMessage } = useErrorStore(({ setErrorMessage }) => ({
+    setErrorMessage,
+  }));
+
   const {
     nftDetailState,
     updateNFTDetailState,
@@ -84,9 +95,12 @@ const Searchbar = () => {
 
   const [inputSearch, setInputSearch] = useState("");
 
+  const [placeholderCounter, setPlaceholderCounter] = useState(0);
+
   const {
     home: {
       assets: { searchIcon },
+      search: { placeholders },
     },
   } = screens;
 
@@ -119,7 +133,7 @@ const Searchbar = () => {
     const nftsByCollectionResult = await getNFTsByCollection(inputSearch);
 
     if (!nftsByCollectionResult.success) {
-      console.log(nftsByCollectionResult.error);
+      setErrorMessage(nftsByCollectionResult.error);
 
       setLoading(false);
 
@@ -133,8 +147,10 @@ const Searchbar = () => {
     const nftCollectionDetail = await getNFTCollectionDetail(inputSearch);
 
     if (!nftCollectionDetail.success) {
-      console.log(nftCollectionDetail.error);
+      setErrorMessage(nftCollectionDetail.error);
+
       setLoading(false);
+
       return;
     }
 
@@ -252,6 +268,25 @@ const Searchbar = () => {
     }
   }, [selectedNFT]);
 
+  useEffect(() => {
+    if (intervalIdRef.current && inputSearch.length > 0) {
+      clearInterval(intervalIdRef.current);
+    } else {
+      intervalIdRef.current = setInterval(() => {
+        setPlaceholderCounter((prevState) => {
+          if (prevState >= placeholders.length - 1) {
+            return 0;
+          }
+          return prevState + 1;
+        });
+      }, 5000);
+    }
+
+    return () => {
+      clearInterval(intervalIdRef.current);
+    };
+  }, [inputSearch]);
+
   return (
     <MainSearch $centerPosition={inCenterPosition}>
       <MainSearchbar>
@@ -260,6 +295,7 @@ const Searchbar = () => {
           id="input_search"
           name="input_search"
           value={inputSearch}
+          placeholder={placeholders[placeholderCounter]?.text}
           onChange={handleInputChange}
         />
         <SearchIcon
@@ -286,3 +322,5 @@ const Searchbar = () => {
 };
 
 export default Searchbar;
+
+// "HttpRequestError: HTTP request failed. URL: https://docs-demo.quiknode.pro Request body: {"method":"qn_fetchNFTsByCollection","params":[{"collection":"0x34Bf014465eA398dA11cBbbaac2377C215b08190","page":1}]} Details: Failed to fetch Version: viem@2.16.1"

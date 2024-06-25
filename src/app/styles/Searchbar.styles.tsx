@@ -60,6 +60,36 @@ const moveMainSearchToCenterAnimation = css`
   ${moveMainSearchToCenter} ${animationLength} linear forwards;
 `;
 
+interface IFadeOut {
+  $animationDuration: string;
+}
+
+const fadeOut = keyframes`
+  0% {
+    opacity: 0.05;
+    height: 0px;
+  }
+  5% {
+    opacity: 1;
+    height: 80px;
+  }
+  90% {
+    opacity: 1;
+    height: 80px;
+  }
+  100% {
+    opacity: 0.05;
+    height: 0px;
+    border: 0px;
+    overflow: hidden;
+  }
+`;
+
+const fadeOutAnimation = css<IFadeOut>`
+  animation: ${fadeOut} ${({ $animationDuration }) => $animationDuration} linear
+    forwards;
+`;
+
 export const MainSearch = styled.main<ISearch>`
   width: fit-content;
   height: fit-content;
@@ -132,6 +162,10 @@ export const SearchInput = styled.input<ISearch>`
       ? `
   padding: 0px var(--seven-px);
   margin-right: var(--seven-px);
+
+  &::placeholder {
+    font-size: 0.95rem;
+  }
   `
       : `
   height: 0px;
@@ -166,6 +200,47 @@ export const SearchIcon = styled.img<ISearchIcon>`
         scale: 0.92;
     }
   `}
+`;
+
+export const SearchErrorCard = styled.div<IFadeOut>`
+  --redColor: #ff3324;
+  position: relative;
+  width: fit-content;
+  max-width: 440px;
+  height: 80px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 0px calc(var(--ten-px) * 2.5);
+  border-radius: 5px;
+  background-color: ${({ theme: { textColor } }) => `${textColor}1A`};
+  overflow: hidden;
+  border: 2px solid var(--redColor);
+  ${fadeOutAnimation}
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    height: 100%;
+    width: 100%;
+    z-index: -1;
+    background-color: #ff332434;
+  }
+`;
+
+export const SearchErrorIcon = styled.img`
+  --size: 30px;
+  height: var(--size);
+  width: var(--size);
+  margin-right: var(--seven-px);
+`;
+
+export const SearchErrorMessage = styled.h4`
+  width: fit-content;
+  font-size: 0.9rem;
 `;
 
 export const SearchResult = styled.main`

@@ -5,7 +5,7 @@ import { getNFTsByCollection } from "@/api";
 // components
 import Searchbar from "@/app/components/Searchbar";
 // store
-import { useNFTDetailStore, useSearchStore } from "@/store";
+import { useErrorStore, useNFTDetailStore, useSearchStore } from "@/store";
 // styles
 import {
   AddressText,
@@ -18,14 +18,31 @@ import {
   Title,
   TokenId,
 } from "@/app/styles/home/index.styles";
-import { FlexContainer } from "@/app/styles/shared/Container.styles";
+import {
+  FlexContainer,
+  PositionContainer,
+} from "@/app/styles/shared/Container.styles";
 import { expressInThousands } from "@/utils/transform";
+import {
+  SearchErrorCard,
+  SearchErrorIcon,
+  SearchErrorMessage,
+} from "@/app/styles/Searchbar.styles";
+// utils
+import { screens } from "@/utils/data";
 
 const HomeScreen = () => {
+  const animationDuration = 5150;
+
   const mainHomeRef = useRef() as MutableRefObject<HTMLDivElement>;
   const scrollerRef = useRef() as MutableRefObject<HTMLDivElement>;
+  const timeoutIdRef = useRef() as MutableRefObject<NodeJS.Timeout>;
 
   const [loading, setLoading] = useState(false);
+
+  const { errorMessage, setErrorMessage } = useErrorStore(
+    ({ errorMessage, setErrorMessage }) => ({ errorMessage, setErrorMessage })
+  );
 
   const {
     nftCollectionDetailState,
@@ -50,14 +67,18 @@ const HomeScreen = () => {
     inCenterPosition,
   }));
 
+  const {
+    home: {
+      assets: { searchErrorIcon },
+    },
+  } = screens;
+
   const onScrollEventHandler = async (e: Event) => {
     if (loading) return;
 
     const target = scrollerRef.current;
 
     const { clientHeight, scrollHeight, scrollTop } = target;
-
-    console.log({ clientHeight, scrollHeight, scrollTop });
 
     if (scrollTop + clientHeight > scrollHeight - 50) {
       setLoading(true);
@@ -68,7 +89,7 @@ const HomeScreen = () => {
       const { data, error, success } = await getNFTsByCollection(address, page);
 
       if (!success) {
-        console.log(error);
+        setErrorMessage(error);
         setLoading(false);
         return;
       }
@@ -173,6 +194,18 @@ const HomeScreen = () => {
     }
   }, [loading]);
 
+  useEffect(() => {
+    if (errorMessage.length > 0) {
+      timeoutIdRef.current = setTimeout(() => {
+        setErrorMessage("");
+      }, animationDuration);
+    }
+
+    if (errorMessage.length == 0 && timeoutIdRef.current) {
+      clearTimeout(timeoutIdRef.current);
+    }
+  }, [errorMessage]);
+
   return (
     <MainHome ref={mainHomeRef}>
       <Searchbar />
@@ -180,6 +213,29 @@ const HomeScreen = () => {
         <DummyScreen />
         {renderMainScreenOne()}
       </FlexContainer>
+      {errorMessage.length > 0 ? (
+        <PositionContainer
+          $position="fixed"
+          $top="30px"
+          $left="50%"
+          $alignItems="center"
+          $justifyContent="center"
+          $miscellaneous="transform: translateX(-50%);"
+        >
+          <SearchErrorCard $animationDuration={`${animationDuration}ms`}>
+            <SearchErrorIcon src={searchErrorIcon.src} />
+            <FlexContainer
+              $justifyContent="center"
+              $height="40px"
+              $miscellaneous="overflow-x: scroll;"
+            >
+              <SearchErrorMessage>{errorMessage}</SearchErrorMessage>
+            </FlexContainer>
+          </SearchErrorCard>
+        </PositionContainer>
+      ) : (
+        <></>
+      )}
     </MainHome>
   );
 };

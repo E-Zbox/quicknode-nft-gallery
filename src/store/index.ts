@@ -64,3 +64,13 @@ export const useNFTDetailStore = create<INFTDetailStore>((set) => ({
   selectedNFT: "",
   setSelectedNFT: (newState: string) => set({ selectedNFT: newState }),
 }));
+
+interface IErrorStore {
+  errorMessage: string;
+  setErrorMessage: (newState: string) => void;
+}
+
+export const useErrorStore = create<IErrorStore>((set) => ({
+  errorMessage: "",
+  setErrorMessage: (newState: string) => set({ errorMessage: newState }),
+}));

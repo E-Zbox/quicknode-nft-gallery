@@ -1,4 +1,5 @@
 // assets
+import searchErrorIcon from "../../public/icons8-error-64.png";
 import searchIcon from "../../public/icons8-search-30.png";
 
 const search = {
@@ -21,6 +22,7 @@ const search = {
 export default {
   search,
   assets: {
+    searchErrorIcon,
     searchIcon,
   },
 };

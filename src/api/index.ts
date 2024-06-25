@@ -43,15 +43,29 @@ export const getNFTsByCollection = async (
       page,
     });
 
+    if (res.tokens.length == 0)
+      throw Error(`"${collection}" is not an ERC-721 address`);
+
     response = {
       data: { ...response.data, ...res },
       error: "",
       success: true,
     };
   } catch (error) {
+    let errorMessage = `${error}`;
+    let finalErrorMessage = errorMessage;
+
+    if (errorMessage.includes("Error:")) {
+      finalErrorMessage = errorMessage.split("Error:")[1];
+    }
+
+    if (errorMessage.includes("HttpRequestError")) {
+      finalErrorMessage = "Failed to fetch request";
+    }
+
     response = {
       ...response,
-      error: `${error}`,
+      error: finalErrorMessage,
     };
   } finally {
     return response;
@@ -88,9 +102,20 @@ export const getNFTCollectionDetail = async (
       success: true,
     };
   } catch (error) {
+    let errorMessage = `${error}`;
+    let finalErrorMessage = errorMessage;
+
+    if (errorMessage.includes("Error:")) {
+      finalErrorMessage = errorMessage.split("Error:")[1];
+    }
+
+    if (errorMessage.includes("HttpRequestError")) {
+      finalErrorMessage = "Failed to fetch request";
+    }
+
     response = {
       ...response,
-      error: `${error}`,
+      error: errorMessage,
     };
   } finally {
     return response;
