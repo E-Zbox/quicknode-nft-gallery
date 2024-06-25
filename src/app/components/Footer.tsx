@@ -21,15 +21,11 @@ const Footer = () => {
   return (
     <MainFooter>
       {socials.map(({ icon, link }, key) => (
-        <FloatingCard key={key}>
-          <SocialIcons
-            $bgImg={icon.src}
-            href={link}
-            target="_blank"
-          ></SocialIcons>
+        <FloatingCard key={key} href={link} target="_blank">
+          <SocialIcons $bgImg={icon.src}></SocialIcons>
         </FloatingCard>
       ))}
-      <FloatingCard>
+      <FloatingCard href="https://quicknode.com" target="_blank">
         <FlexContainer
           $flexDirection="row"
           $alignItems="center"

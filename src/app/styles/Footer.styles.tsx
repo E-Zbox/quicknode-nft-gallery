@@ -16,7 +16,8 @@ export const MainFooter = styled.main`
   align-items: flex-end;
 `;
 
-export const FloatingCard = styled.div`
+export const FloatingCard = styled.a`
+  text-decoration: none;
   width: fit-content;
   display: flex;
   flex-direction: row;
@@ -25,12 +26,30 @@ export const FloatingCard = styled.div`
   margin-top: calc(var(--ten-px) * 2);
   border-radius: 30px;
   overflow: hidden;
+  scale: 0.92;
   transform: translateX(-20px);
 
   &:last-of-type {
+    scale: 1;
     border-radius: 5px;
     transform: translateX(0);
     background-color: #242630;
+
+    &:hover {
+      scale: 1.1;
+    }
+
+    &:active {
+      scale: 1.05;
+    }
+  }
+
+  &:hover {
+    scale: 1;
+  }
+
+  &:active {
+    scale: 0.95;
   }
 `;
 
@@ -41,21 +60,12 @@ export const PoweredTitle = styled.h4`
   margin-right: 10px;
 `;
 
-export const SocialIcons = styled.a<ISocialIcons>`
+export const SocialIcons = styled.img<ISocialIcons>`
   --size: 40px;
   height: var(--size);
   width: var(--size);
-  scale: 0.9;
   background: url(${({ $bgImg }) => $bgImg});
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
-
-  &:hover {
-    scale: 1;
-  }
-
-  &:active {
-    scale: 0.95;
-  }
 `;
