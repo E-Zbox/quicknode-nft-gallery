@@ -175,14 +175,21 @@ const Searchbar = () => {
           <SearchResultTitle>Recent</SearchResultTitle>
           {previousSearch.map((tag, key) => {
             const [firstCard] = nftDetailState[tag];
-            const { address, name, totalSupply } =
+            const { address, circulatingSupply, name, totalSupply } =
               nftCollectionDetailState[tag];
 
             const tokenAddress = `#${address.toLowerCase()}`;
 
-            const totalSupplyInThousands = totalSupply
-              ? expressInThousands(totalSupply)
-              : "";
+            let totalSupplyInThousands = "";
+
+            if (totalSupply) {
+              if (circulatingSupply && totalSupply < circulatingSupply) {
+                totalSupplyInThousands = expressInThousands(circulatingSupply);
+              } else {
+                totalSupplyInThousands = expressInThousands(totalSupply);
+              }
+            }
+
             return (
               <ResultCard
                 key={key}
@@ -191,9 +198,13 @@ const Searchbar = () => {
                 <ResultCardImg src={firstCard.imageUrl} />
                 <FlexContainer>
                   <ResultCardTitle>{name}</ResultCardTitle>
-                  <ResultCardSubTitle>
-                    <span>{totalSupplyInThousands}</span> tokens available
-                  </ResultCardSubTitle>
+                  {totalSupplyInThousands.length > 0 ? (
+                    <ResultCardSubTitle>
+                      <span>{totalSupplyInThousands}</span> tokens available
+                    </ResultCardSubTitle>
+                  ) : (
+                    <></>
+                  )}
                 </FlexContainer>
               </ResultCard>
             );
