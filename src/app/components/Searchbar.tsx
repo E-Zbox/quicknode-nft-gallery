@@ -180,7 +180,9 @@ const Searchbar = () => {
 
             const tokenAddress = `#${address.toLowerCase()}`;
 
-            const totalSupplyInThousands = expressInThousands(totalSupply);
+            const totalSupplyInThousands = totalSupply
+              ? expressInThousands(totalSupply)
+              : "";
             return (
               <ResultCard
                 key={key}
