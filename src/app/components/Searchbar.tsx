@@ -188,6 +188,8 @@ const Searchbar = () => {
               } else {
                 totalSupplyInThousands = expressInThousands(totalSupply);
               }
+            } else if (circulatingSupply) {
+              totalSupplyInThousands = expressInThousands(circulatingSupply);
             }
 
             return (
